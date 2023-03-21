@@ -1,0 +1,105 @@
+﻿@page "/adminpage"
+
+<!--Allow only certain role to access page-->
+@attribute [Authorize(Roles = "Admin")]
+
+<!--@using BlazorClaimRolesPolicy.Data-->
+@using Data.Models;
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@using System.Security.Claims;
+@inject IJSRuntime JsRuntime;
+@inject UserManager<IdentityUser> _userManager;
+@inject SignInManager<IdentityUser> _signInManager;
+
+<h3>AdminPage</h3>
+
+<!--Define the model and action on submit-->
+<EditForm Model="newUser" OnValidSubmit="AddUserWithRole">
+    <DataAnnotationsValidator /> <!--Validates the model rules-->
+    <ValidationSummary />
+    <div class="form-group row">
+        <label for="login" class="col-sm-2 col-form-label">
+            Add User
+        </label>
+        <div class="col-sm-10">
+            <InputText id="login" @bind-Value="newUser.LoginName"></InputText>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="role-select" class="col-sm-2 col-form-label">
+            Assign Role
+        </label>
+        <div class="col-sm-10">
+            <InputSelect id="role-select" @bind-Value="newUser.UserRole">
+                @foreach(var role in selectList)
+                {
+                    <option value="@role.Value" selected="@role.Selected">@role.Text</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+    <input type="submit" class="btn btn-primary" value="Save"/>
+
+
+    </EditForm>
+@code {
+    #nullable disable
+
+    User newUser = new User();
+    List<Role> roleList = new List<Role>();
+    List<SelectListItem> selectList = new List<SelectListItem>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Get these roles from database
+        roleList = new()
+        {
+            new Role() { RoleName = "Admin", Id = "1" },
+            new Role() { RoleName = "Moderator", Id = "2" },
+            new Role() { RoleName = "User", Id = "3" },
+            new Role() { RoleName = "Guest", Id = "4" }
+        };
+
+        foreach (Role role in roleList)
+        {
+            selectList.Add(new SelectListItem()
+            {
+                Text = role.RoleName,
+                Value = role.Id,
+                Selected = false
+            });
+        }
+    }
+
+    private async void AddUserWithRole(EditContext context)
+    {
+        var usermodel = context.Model as User;
+        var user      = new IdentityUser
+        {
+            UserName       = usermodel.LoginName,
+            Email          = usermodel.LoginName,
+            EmailConfirmed = true
+        };
+        var result = await _userManager.CreateAsync(user, "Password123!");
+        var messagePrompt = "Something went wrong...";
+
+        if(result.Succeeded)
+        {
+            var getRoleFromList  = roleList.FirstOrDefault(x => x.Id == usermodel.UserRole);
+
+            //Without this the roles aren't added to the correct database and policies will not work
+            var roleAddedResult  = await _userManager.AddToRoleAsync(user, getRoleFromList.RoleName);
+
+            //
+            var claimAddedResult = await _userManager.AddClaimAsync(user, new Claim(getRoleFromList.RoleName, getRoleFromList.Id));
+            
+            if(roleAddedResult.Succeeded && claimAddedResult.Succeeded)
+            {
+                messagePrompt = "User and claim succesfully added!";
+            }
+        }
+        await JsRuntime.InvokeVoidAsync("alert", messagePrompt);
+    }
+}
