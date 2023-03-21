@@ -1,5 +1,6 @@
 using Blazor_Database_Application.Areas.Identity;
 using Blazor_Database_Application.Data;
+using Blazor_Database_Application.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -25,7 +26,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddScoped<UserServices>();
 
 //Policy for Admin and Moderator claims
 builder.Services.AddAuthorization(options =>

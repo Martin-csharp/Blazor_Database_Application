@@ -1,13 +1,13 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject Services.UserServices UserServices
 
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, world!</h1>
 
 <AuthorizeView>
-    <p>@userName</p>
+    <p>Welcome back @_userName</p>
+    <p>Id: @_userId</p>
 </AuthorizeView>
 
 <AuthorizeView Policy="AdminModerator">
@@ -22,12 +22,14 @@
 
 @code
 {
-    private string userName;
+    #nullable disable
+
+    private string _userName;
+    private string _userId;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        userName = user.Identity.Name;
+        _userName = await UserServices.GetUserNameAsync();
+        _userId = await UserServices.GetUserIdAsync();
     }
 }
