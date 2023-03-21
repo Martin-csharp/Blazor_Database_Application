@@ -1,23 +1,11 @@
 ﻿@page "/"
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
 @inject Services.UserServices UserServices
 
-<PageTitle>Index</PageTitle>
-
-<h1>Hello, world!</h1>
-
-<AuthorizeView>
-    <p>Welcome back @_userName</p>
-    <p>Id: @_userId</p>
-</AuthorizeView>
-
-<AuthorizeView Policy="AdminModerator">
-    <p>Admin and mods are equal and have no secrets</p>
-</AuthorizeView>
-
-<AuthorizeView Roles="Admin">
-    <p>Or do I... :)</p>
-    <p>Admin is the best!</p>
-</AuthorizeView>
+<PageTitle>Welcome</PageTitle>
 
 
 @code
@@ -29,6 +17,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if(!SignInManager.Context.User.Identity.IsAuthenticated)
+        {
+            SignInManager.Context.Response.Redirect("/identity/account/login");
+        }
+
         _userName = await UserServices.GetUserNameAsync();
         _userId = await UserServices.GetUserIdAsync();
     }

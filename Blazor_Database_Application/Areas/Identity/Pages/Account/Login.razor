@@ -1,0 +1,47 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Identity.UI
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<PageTitle>Login</PageTitle>
+
+<div class="h-100 d-flex flex-column align-items-center justify-content-center">
+    <h1>Login</h1>
+    <div class="px250-container">
+        To use this web application you are required to log in with an account given to you by the administrator.
+    </div>
+
+    <hr />
+
+    <EditForm Model="_loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator /> <!--Validates the model rules-->
+        <ValidationSummary />
+
+        <InputText class="login-input" placeholder="Please enter your email" @bind-Value="@_loginModel.Email" /><br />
+        <InputText class="login-input" placeholder="Please enter your password" @bind-Value="@_loginModel.Password" /><br />
+        <input id="login-btn" type="submit" class="btn btn-primary" value="Login" />
+    </EditForm>
+</div>
+
+@code
+{
+    #nullable disable
+
+    private Data.Models.LoginModel _loginModel = new();
+
+    [Inject]
+    private NavigationManager _navigationManager { get; set; }
+
+    private async Task HandleLogin()
+    {
+        var user = await UserManager.FindByEmailAsync(_loginModel.Email);
+        var result = await SignInManager.PasswordSignInAsync(user, _loginModel.Password, false, false);
+        if(result.Succeeded)
+        {
+            _navigationManager.NavigateTo("/");
+        }
+    }
+}

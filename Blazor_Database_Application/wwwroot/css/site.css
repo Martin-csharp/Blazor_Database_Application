@@ -66,3 +66,18 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+/*----------Custom-----------*/
+
+.login-input {
+    width: 250px;
+    margin-bottom: 5px;
+}
+
+#login-btn {
+    width: 250px;
+}
+
+.px250-container {
+    max-width: 250px;
+}
