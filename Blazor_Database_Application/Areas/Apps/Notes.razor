@@ -1,7 +1,75 @@
 ﻿@page "/notes"
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@inject Services.UserServices UserServices
+@inject Services.NoteService NoteService
+@inject IJSRuntime JsRuntime
 
-<h3>Notes</h3>
+<h4>You can add a note here and read other people's notes! Very usefull!</h4>
+<p>Note by @_userName</p>
+
+<EditForm Model="_noteModel" OnValidSubmit="SaveNote">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText placeholder="Your note here..." @bind-Value="_noteModel.Note" />
+    <input type="submit" value="Save note" class="btn btn-primary" />
+</EditForm>
+<br /><br />
+<p>All notes</p>
+
+@foreach(var item in _noteList)
+{
+    <div class="note-container">
+        Note by: @_nameDictionary[item.Id]
+        <p>@item.Note</p>
+    </div>
+    
+}
 
 @code {
+    #nullable disable
 
+    private Data.Models.NoteModel _noteModel = new();
+    private List<Data.Models.NoteModel> _noteList = new();
+
+    //Creating a dictionary to map the UserId property to a UserName
+    private Dictionary<int, string> _nameDictionary = new();
+
+    private string _userName;
+    private string _userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Make sure that user is authenticated
+        if(!SignInManager.Context.User.Identity.IsAuthenticated)
+        {
+            SignInManager.Context.Response.Redirect("/identity/account/login");
+        }
+
+        //Store user name and id
+        _userName = await UserServices.GetUserNameAsync();
+        _userId   = await UserServices.GetUserIdAsync();
+        var user = await UserManager.FindByIdAsync(_userId);
+        await LoadNotes();
+    }
+
+    //Save note to database
+    private async Task SaveNote()
+    {
+        await NoteService.AddNoteAsync(_userId, _noteModel.Note);
+        await LoadNotes();
+        await JsRuntime.InvokeVoidAsync("alert", "Note added!");
+    }
+
+    private async Task LoadNotes()
+    {
+        _noteList = await NoteService.GetAllNotes();
+        foreach(var item in _noteList)
+        {
+            var user = await UserManager.FindByIdAsync(item.UserId);
+            if (user != null) _nameDictionary[item.Id] = user.UserName;
+            else _nameDictionary[item.Id] = "Deleted user";
+        }
+    }
 }

@@ -81,3 +81,12 @@ a, .btn-link {
 .px250-container {
     max-width: 250px;
 }
+
+.note-container {
+    max-width: 400px;
+    border: 2px black inset;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: #c4c2ce;
+    margin-bottom: 5px;
+}

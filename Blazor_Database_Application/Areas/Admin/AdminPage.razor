@@ -3,7 +3,6 @@
 <!--Allow only certain role to access page-->
 @attribute [Authorize(Roles = "Admin")]
 
-<!--@using BlazorClaimRolesPolicy.Data-->
 @using Data.Models;
 @using Microsoft.AspNetCore.Identity;
 @using Microsoft.AspNetCore.Mvc.Rendering;
@@ -41,9 +40,10 @@
         </div>
     </div>
     <input type="submit" class="btn btn-primary" value="Save"/>
+</EditForm>
 
+<p>For now all users addes will have password: Password123!</p>
 
-    </EditForm>
 @code {
     #nullable disable
 
